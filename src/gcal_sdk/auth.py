@@ -30,7 +30,6 @@ def load_credentials(
 
     Raises:
         FileNotFoundError: If the token file doesn't exist.
-        ValueError: If the token file is missing required fields.
     """
     token_path = Path(os.path.expanduser(str(token_path)))
     credentials_path = Path(os.path.expanduser(str(credentials_path)))
@@ -93,3 +92,4 @@ def _save_token(creds: Credentials, token_path: Path) -> None:
         "scopes": list(creds.scopes) if creds.scopes else SCOPES,
     }
     token_path.write_text(json.dumps(token_data, indent=2))
+    token_path.chmod(0o600)

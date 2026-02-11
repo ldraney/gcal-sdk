@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -61,7 +61,7 @@ class GCalClient:
         self.freebusy = FreeBusyResource(self._service)
 
     @property
-    def service(self):
+    def service(self) -> Any:
         """Access the underlying googleapiclient Resource (escape hatch)."""
         return self._service
 

@@ -6,8 +6,6 @@ Flow: create -> get -> patch -> list (verify present) -> delete -> list (verify 
 
 from datetime import datetime, timedelta, timezone
 
-import pytest
-
 from gcal_sdk import GCalClient
 
 
@@ -81,14 +79,11 @@ class TestEventCRUD:
         """Test creating and deleting an all-day event."""
         from datetime import date as date_type
 
-        from gcal_sdk import EventDateTime
-
         tomorrow = date_type.today() + timedelta(days=1)
         day_after = tomorrow + timedelta(days=1)
 
         event = client.events.create(
             test_calendar_id,
-            summary="All Day Test",
             body={
                 "summary": "All Day Test",
                 "start": {"date": tomorrow.isoformat()},

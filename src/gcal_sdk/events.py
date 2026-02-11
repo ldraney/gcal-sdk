@@ -167,24 +167,17 @@ class EventsResource:
         Returns:
             The created Event.
         """
-        if body is None:
-            body = {}
-            if summary is not None:
-                body["summary"] = summary
-            if description is not None:
-                body["description"] = description
-            if location is not None:
-                body["location"] = location
-            if start is not None:
-                body["start"] = _to_event_datetime(start, time_zone)
-            if end is not None:
-                body["end"] = _to_event_datetime(end, time_zone)
-            if attendees is not None:
-                body["attendees"] = [
-                    {"email": a} if isinstance(a, str) else a for a in attendees
-                ]
-            if recurrence is not None:
-                body["recurrence"] = recurrence
+        body = _build_event_body(
+            summary=summary,
+            description=description,
+            location=location,
+            start=start,
+            end=end,
+            time_zone=time_zone,
+            attendees=attendees,
+            recurrence=recurrence,
+            body=body,
+        )
 
         result = self._events.insert(calendarId=calendar_id, body=body).execute()
         return Event.from_api_response(result)
@@ -246,24 +239,17 @@ class EventsResource:
         Returns:
             The patched Event.
         """
-        if body is None:
-            body = {}
-            if summary is not None:
-                body["summary"] = summary
-            if description is not None:
-                body["description"] = description
-            if location is not None:
-                body["location"] = location
-            if start is not None:
-                body["start"] = _to_event_datetime(start, time_zone)
-            if end is not None:
-                body["end"] = _to_event_datetime(end, time_zone)
-            if attendees is not None:
-                body["attendees"] = [
-                    {"email": a} if isinstance(a, str) else a for a in attendees
-                ]
-            if recurrence is not None:
-                body["recurrence"] = recurrence
+        body = _build_event_body(
+            summary=summary,
+            description=description,
+            location=location,
+            start=start,
+            end=end,
+            time_zone=time_zone,
+            attendees=attendees,
+            recurrence=recurrence,
+            body=body,
+        )
 
         result = (
             self._events.patch(
@@ -352,6 +338,45 @@ class EventsResource:
         return [Event.from_api_response(item) for item in items]
 
 
+def _build_event_body(
+    summary: Optional[str] = None,
+    description: Optional[str] = None,
+    location: Optional[str] = None,
+    start: Optional[datetime | EventDateTime] = None,
+    end: Optional[datetime | EventDateTime] = None,
+    time_zone: Optional[str] = None,
+    attendees: Optional[list[str | dict]] = None,
+    recurrence: Optional[list[str]] = None,
+    body: Optional[dict] = None,
+) -> dict:
+    """Build an event body dict from convenience kwargs or a raw body.
+
+    If *body* is provided it is returned as-is (it takes precedence).
+    Otherwise a dict is assembled from the individual keyword arguments.
+    """
+    if body is not None:
+        return body
+
+    result: dict = {}
+    if summary is not None:
+        result["summary"] = summary
+    if description is not None:
+        result["description"] = description
+    if location is not None:
+        result["location"] = location
+    if start is not None:
+        result["start"] = _to_event_datetime(start, time_zone)
+    if end is not None:
+        result["end"] = _to_event_datetime(end, time_zone)
+    if attendees is not None:
+        result["attendees"] = [
+            {"email": a} if isinstance(a, str) else a for a in attendees
+        ]
+    if recurrence is not None:
+        result["recurrence"] = recurrence
+    return result
+
+
 def _ensure_isoformat(dt: datetime) -> str:
     """Ensure a datetime is in ISO 8601 format with timezone."""
     if dt.tzinfo is None:
@@ -369,7 +394,12 @@ def _to_event_datetime(
     """Convert a datetime or EventDateTime to an API-compatible dict."""
     if isinstance(value, EventDateTime):
         return value.to_api_dict()
-    # It's a plain datetime
+    # It's a plain datetime — must be timezone-aware
+    if value.tzinfo is None:
+        raise ValueError(
+            "Datetime must be timezone-aware. Use datetime.now(timezone.utc) "
+            "or attach a timezone with .replace(tzinfo=...)."
+        )
     result: dict = {"dateTime": value.isoformat()}
     if time_zone is not None:
         result["timeZone"] = time_zone
