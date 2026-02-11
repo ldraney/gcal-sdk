@@ -18,6 +18,24 @@ class CalendarsResource:
         self._calendar_list = service.calendarList()
         self._calendars = service.calendars()
 
+    @staticmethod
+    def _build_list_kwargs(
+        *,
+        show_deleted: bool = False,
+        show_hidden: bool = False,
+        max_results: int = 250,
+        page_token: Optional[str] = None,
+    ) -> dict:
+        """Build kwargs dict for the calendarList().list() API call."""
+        kwargs: dict = {
+            "showDeleted": show_deleted,
+            "showHidden": show_hidden,
+            "maxResults": max_results,
+        }
+        if page_token is not None:
+            kwargs["pageToken"] = page_token
+        return kwargs
+
     def list(
         self,
         *,
@@ -37,13 +55,12 @@ class CalendarsResource:
         Returns:
             List of Calendar objects.
         """
-        kwargs: dict = {
-            "showDeleted": show_deleted,
-            "showHidden": show_hidden,
-            "maxResults": max_results,
-        }
-        if page_token is not None:
-            kwargs["pageToken"] = page_token
+        kwargs = self._build_list_kwargs(
+            show_deleted=show_deleted,
+            show_hidden=show_hidden,
+            max_results=max_results,
+            page_token=page_token,
+        )
 
         result = self._calendar_list.list(**kwargs).execute()
         items = result.get("items", [])
@@ -64,13 +81,11 @@ class CalendarsResource:
         page_token: Optional[str] = None
 
         while True:
-            kwargs: dict = {
-                "showDeleted": show_deleted,
-                "showHidden": show_hidden,
-                "maxResults": 250,
-            }
-            if page_token is not None:
-                kwargs["pageToken"] = page_token
+            kwargs = self._build_list_kwargs(
+                show_deleted=show_deleted,
+                show_hidden=show_hidden,
+                page_token=page_token,
+            )
 
             result = self._calendar_list.list(**kwargs).execute()
             items = result.get("items", [])

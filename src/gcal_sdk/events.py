@@ -18,6 +18,38 @@ class EventsResource:
         self._service = service
         self._events = service.events()
 
+    @staticmethod
+    def _build_list_kwargs(
+        calendar_id: str,
+        *,
+        time_min: Optional[datetime] = None,
+        time_max: Optional[datetime] = None,
+        max_results: int = 250,
+        single_events: bool = True,
+        order_by: Optional[str] = "startTime",
+        q: Optional[str] = None,
+        page_token: Optional[str] = None,
+        show_deleted: bool = False,
+    ) -> dict:
+        """Build kwargs dict for the events().list() API call."""
+        kwargs: dict = {
+            "calendarId": calendar_id,
+            "maxResults": max_results,
+            "singleEvents": single_events,
+            "showDeleted": show_deleted,
+        }
+        if time_min is not None:
+            kwargs["timeMin"] = _ensure_isoformat(time_min)
+        if time_max is not None:
+            kwargs["timeMax"] = _ensure_isoformat(time_max)
+        if order_by is not None:
+            kwargs["orderBy"] = order_by
+        if q is not None:
+            kwargs["q"] = q
+        if page_token is not None:
+            kwargs["pageToken"] = page_token
+        return kwargs
+
     def list(
         self,
         calendar_id: str = "primary",
@@ -48,22 +80,17 @@ class EventsResource:
         Returns:
             List of Event objects.
         """
-        kwargs: dict = {
-            "calendarId": calendar_id,
-            "maxResults": max_results,
-            "singleEvents": single_events,
-            "showDeleted": show_deleted,
-        }
-        if time_min is not None:
-            kwargs["timeMin"] = _ensure_isoformat(time_min)
-        if time_max is not None:
-            kwargs["timeMax"] = _ensure_isoformat(time_max)
-        if order_by is not None:
-            kwargs["orderBy"] = order_by
-        if q is not None:
-            kwargs["q"] = q
-        if page_token is not None:
-            kwargs["pageToken"] = page_token
+        kwargs = self._build_list_kwargs(
+            calendar_id,
+            time_min=time_min,
+            time_max=time_max,
+            max_results=max_results,
+            single_events=single_events,
+            order_by=order_by,
+            q=q,
+            page_token=page_token,
+            show_deleted=show_deleted,
+        )
 
         result = self._events.list(**kwargs).execute()
         items = result.get("items", [])
@@ -91,22 +118,16 @@ class EventsResource:
         page_token: Optional[str] = None
 
         while True:
-            kwargs: dict = {
-                "calendarId": calendar_id,
-                "maxResults": 250,
-                "singleEvents": single_events,
-                "showDeleted": show_deleted,
-            }
-            if time_min is not None:
-                kwargs["timeMin"] = _ensure_isoformat(time_min)
-            if time_max is not None:
-                kwargs["timeMax"] = _ensure_isoformat(time_max)
-            if order_by is not None:
-                kwargs["orderBy"] = order_by
-            if q is not None:
-                kwargs["q"] = q
-            if page_token is not None:
-                kwargs["pageToken"] = page_token
+            kwargs = self._build_list_kwargs(
+                calendar_id,
+                time_min=time_min,
+                time_max=time_max,
+                single_events=single_events,
+                order_by=order_by,
+                q=q,
+                page_token=page_token,
+                show_deleted=show_deleted,
+            )
 
             result = self._events.list(**kwargs).execute()
             items = result.get("items", [])

@@ -3,7 +3,7 @@
 import datetime as dt
 from typing import Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class EventDateTime(BaseModel):
@@ -18,6 +18,22 @@ class EventDateTime(BaseModel):
     time_zone: Optional[str] = Field(None, alias="timeZone")
 
     model_config = {"populate_by_name": True}
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def _reject_datetime_for_date(cls, v):  # noqa: ANN001, ANN206
+        """Reject datetime instances for the date field.
+
+        Since ``datetime`` is a subclass of ``date`` in Python, a
+        ``datetime`` value would otherwise be silently accepted.  The
+        ``date`` field is intended for all-day events only.
+        """
+        if v is not None and isinstance(v, dt.datetime):
+            raise ValueError(
+                "Use date_time field for datetime values, not date. "
+                "The date field is for all-day events only."
+            )
+        return v
 
     @model_validator(mode="after")
     def check_date_or_datetime(self) -> "EventDateTime":

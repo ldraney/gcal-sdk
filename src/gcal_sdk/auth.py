@@ -22,7 +22,8 @@ def load_credentials(
     """Load OAuth credentials from disk, refreshing if expired.
 
     Args:
-        credentials_path: Path to the OAuth client credentials JSON file.
+        credentials_path: Path to credentials.json file. Only used as a fallback
+            when the token file does not contain client_id/client_secret.
         token_path: Path to the stored token JSON file (with refresh token).
 
     Returns:
