@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "gcal-sdk"
+name = "gcal-sdk-ldraney"
 version = "0.1.0"
 description = "A clean, typed Python SDK for the Google Calendar API v3"
 readme = "README.md"
