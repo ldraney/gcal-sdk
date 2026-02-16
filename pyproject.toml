@@ -12,17 +12,15 @@ requires-python = ">= 3.10"
 authors = [
     { name = "Lucas Draney" },
 ]
-keywords = ["google", "calendar", "api", "sdk"]
+keywords = ["google-calendar", "sdk", "api", "python", "pydantic"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
+    "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Typing :: Typed",
+    "Intended Audience :: Developers",
 ]
 dependencies = [
     "google-api-python-client >= 2.0",
